@@ -35,9 +35,10 @@ public class BuildIndex {
 	public static File[] files = directory.listFiles();
 	
 	public static void buildIndex() throws IOException, ParseException {
+		System.out.println("Building index...");
+		
 		// Build a static index file
 		FSDirectory index = FSDirectory.open(Paths.get("src\\main\\resources\\index"));
-		//Directory index = new ByteBuffersDirectory();
 		
         StandardAnalyzer analyzer = new StandardAnalyzer();
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
@@ -46,12 +47,12 @@ public class BuildIndex {
         Map<String, String> map = generateHashMap(w);
         
         w.close();
+        
+        System.out.println("Index complete!");
 	}
 	
 	public static void main(String [] args) throws IOException, ParseException {
-		System.out.println("Building index...");
 		buildIndex();
-		System.out.println("Index complete!");
 	}
 	
 	private static void addDoc(IndexWriter w, String title, String body) throws IOException {
@@ -103,7 +104,7 @@ public class BuildIndex {
                     if (line.startsWith("[[") && line.endsWith("]]") && !(line.contains("Image:")) && !(line.contains("File:"))) {
                     	// Not first title case
                         if (title != null) {
-                        	// Add to hashmap
+                        	// Add to hash map
                         	if (!(sb.toString().trim().contains("#REDIRECT"))) {
                         		map.put(title, sb.toString().trim());
                         		
