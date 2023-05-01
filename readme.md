@@ -15,4 +15,4 @@ IMPORTANT
 	In order to build this index change the version number in the BuildIndex.java file.
 	
 	To download both indexes go to https://drive.google.com/drive/folders/1eWPHnNb5uRGDW5NOyp6KZhmpiHTJvbrZ?usp=sharing
-	Must be accessed from arizona.edu email.
+	Must be accessed from arizona.edu email and uploaded into "src\main\resources" folder
