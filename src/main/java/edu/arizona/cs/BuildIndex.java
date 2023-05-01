@@ -9,41 +9,49 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.TreeMap;
+import java.util.Properties;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.ByteBuffersDirectory;
 import edu.stanford.nlp.ling.*;
 import edu.stanford.nlp.pipeline.*;
 
+/**
+ * 
+ * This file generates two types of indexes. Changing the version field to 1 will build
+ * an index using lemmatized tokens (could take over an hour). The other is a standard
+ * lucene index without and lemmatization or stemming.
+ * 
+ * @authors Merle Crutchfield, Robert Schnell, Avram Parra
+ *
+ */
 public class BuildIndex {
+	
 	public static File directory = new File("wiki-subset-20140602");
 	public static File[] files = directory.listFiles();
+	static int version = 0;
 	
-	public static void buildIndex(int version) throws IOException, ParseException {
+	
+	public static void buildIndex(int v) throws IOException, ParseException {
 		System.out.println("Building index...");
-		String path = "";
-		if (version == 1)
+		
+		// Switch index
+        String path = "";
+		if (v == 1) {
+            version = 1;
 			path += "src\\main\\resources\\index2";
-		else
+        } else {
 			path += "src\\main\\resources\\index";
+        }
+		
 		// Build a static index file
 		FSDirectory index = FSDirectory.open(Paths.get(path));
 		
@@ -59,30 +67,37 @@ public class BuildIndex {
 	}
 	
 	public static void main(String [] args) throws IOException, ParseException {
-		buildIndex(1);
+		buildIndex(0); // Change to 1 for lemma index, will take a long time
 	}
 	
 	private static void addDoc(IndexWriter w, String title, String body) throws IOException {
         Document doc = new Document();
         doc.add(new StringField("title", title, Field.Store.YES));
-        StringBuilder newBody = new StringBuilder();
-        
-        // Lemmatize
-        Properties props = new Properties();
-        // set the list of annotators to run
-        props.setProperty("annotators", "tokenize, ssplit, pos");
-        // build pipeline
-        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
-        // create a document object
-        CoreDocument document = pipeline.processToCoreDocument(body);
-        // display tokens
-        for (CoreLabel tok : document.tokens())
-        	newBody.append(tok.lemma());
-        
-        doc.add(new TextField("body", newBody.toString(), Field.Store.YES));
+
+        if(version == 1){
+            // Lemmatization builder
+            StringBuilder newBody = new StringBuilder();
+            
+            // Lemmatize
+            Properties props = new Properties();
+            // set the list of annotators to run
+            props.setProperty("annotators", "tokenize, ssplit, pos");
+            // build pipeline
+            StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+            // create a document object
+            CoreDocument document = pipeline.processToCoreDocument(body);
+            // display tokens
+            for (CoreLabel tok : document.tokens())
+                newBody.append(tok.lemma());
+
+            body = newBody.toString();
+        }
+
+        doc.add(new TextField("body", body, Field.Store.YES));
         w.addDocument(doc);
     }
 	
+	// Prints hashmap for testing and debugging purposes
 	public static void printMap(Map<String, String> map) {
 		TreeMap<String, String> sorted = new TreeMap<>();
         
@@ -93,6 +108,7 @@ public class BuildIndex {
         }
 	}
 	
+	// Writes map to file for testing
 	public static void writeToFile(Map<String, String> map) {
 		TreeMap<String, String> sorted = new TreeMap<>();
         
@@ -110,6 +126,7 @@ public class BuildIndex {
         }
 	}
 	
+	// Generates a hashmap to process data into lucene 
 	public static Map<String, String> generateHashMap(IndexWriter w) throws IOException {   
 		Map<String, String> map = new HashMap<>();
         // Map<String, ArrayList<String>> redirects = new HashMap<>();

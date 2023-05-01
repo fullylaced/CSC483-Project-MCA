@@ -19,41 +19,73 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 
+/**
+ * 
+ * This file is the main interface and selection menu for the Jeopardy game. This
+ * allows you to switch between a different scoring modes and indexes.
+ * 
+ * @authors Merle Crutchfield, Robert Schnell, Avram Parra
+ *
+ */
 public class QueryEngine {
 	static FSDirectory index;
 	static StandardAnalyzer analyzer;
 	String mode = "bm25";
+	String index_mode = "reg";
 
-    public QueryEngine(int version) throws IOException, ParseException {
+	// Constructor for query engine
+    public QueryEngine() throws IOException, ParseException {
     	// Retrieve index
-    	try {
-    		String path = "";
-    		if (version == 1) {
-    			System.out.println("here");
-    			path += "src\\main\\resources\\index2";
-    		}
-    		else
-    			path += "src\\main\\resources\\index";
-    		// Build a static index file
-			index = FSDirectory.open(Paths.get(path));
-		} catch (IOException e) {
-			e.printStackTrace();
+		if(index_mode.equals("reg")){
+			try { // Standard Index
+				index = FSDirectory.open(Paths.get("src\\main\\resources\\index"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			try { // Lemma Index
+				index = FSDirectory.open(Paths.get("src\\main\\resources\\lemma_index"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
     	analyzer = new StandardAnalyzer();
     }
     
+    // Constructor for query engine that takes a mode as a parameter
+	public QueryEngine(String idx) throws IOException, ParseException {
+		index_mode = idx;
+    	// Retrieve index
+		if(index_mode.equals("reg")){
+			try { // Standard Index
+				index = FSDirectory.open(Paths.get("src\\main\\resources\\index"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			try { // Lemma Index
+				index = FSDirectory.open(Paths.get("src\\main\\resources\\lemma_index"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+    	analyzer = new StandardAnalyzer();
+    }
+    
+	// Main for testing
     public static void main(String [] args) throws IOException, ParseException {
-    	QueryEngine engine = new QueryEngine(1);
+    	QueryEngine engine = new QueryEngine();
     	System.out.println("Welcome to Jeopardy!");
     	engine.runQuestions();
     }
     
+    // Runs query and prints top 10 results
     public String[] runQuery(String category, String query) throws IOException, ParseException {
-    	int hitsPerPage = 10; 
+    	int hitsPerPage = 10; // Change for less hits
     	
-        String queryStr = QueryBuilder.buildQuery(category, query);
+    	String queryStr = query + " " + category;
+        //String queryStr = QueryBuilder.buildQuery(category, query);
         Query q = new QueryParser("body", analyzer).parse(QueryParser.escape(queryStr));
 
         IndexReader reader = DirectoryReader.open(index);
@@ -81,7 +113,8 @@ public class QueryEngine {
         reader.close();
 		return results;
     }
-
+    
+    // parses all 100 test questions and prints a total score
     public void runQuestions() throws ParseException {
     	// Total scores
     	int correct = 0;
@@ -138,40 +171,4 @@ public class QueryEngine {
         System.out.println("Wrong: " + wrong);
     }
     
-    // Shit does not work well
-    public static String optimizeQuery(String category, String query) {
-    	String newQuery = "";
-    	String[] keywords = {"give", "museum", "from", "city", "capital", "state", "ucla", "alex", "name", "historical"};
-    	// Boost quotes and phrases
-    	boolean inQuote = false;
-    	String[] queryArr = query.split(" ");
-    	for(int i = 0;i<queryArr.length;i++) {
-    		/**
-    		// Boost phrases
-    		// Check if in quote
-    		if(queryArr[i].charAt(0) == '\"') {
-    			inQuote = true;
-    			queryArr[i] = "+" + queryArr[i];
-    		}
-    		if(inQuote && queryArr[i].charAt(queryArr[i].length()-1) == '\"') {
-    			queryArr[i] += "";
-    		} else if(inQuote) {
-    			break;
-    		}
-    		// Boost large words
-    		if(queryArr[i].length() >= 12) {
-    			queryArr[i] = queryArr[i]+"^2";
-    		}
-    		// Reduce small words
-    		if(queryArr[i].length() <= 3) {
-    			queryArr[i] = queryArr[i]+"^0";
-    		}
-    		newQuery += queryArr[i] + " ";
-    		**/
-    	}
-    	System.out.println(newQuery);
-		query += " " + category;
-		return query.replaceAll("\\r\\n", "");
-		//return newQuery + " " + category + "";
-    }
 }

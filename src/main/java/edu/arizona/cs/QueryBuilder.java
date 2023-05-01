@@ -1,14 +1,28 @@
 package edu.arizona.cs;
 
-import java.util.ArrayList;
-
+/**
+ * 
+ * This file is constructs a query by boosting certain terms. 
+ * 
+ * Documents must include:
+ * Quotes
+ * 
+ * Boosted Terms:
+ * Numbers
+ * Dates
+ * Names (people, cities, etc)
+ * 
+ * @authors Merle Crutchfield, Robert Schnell, Avram Parra
+ *
+ */
 public class QueryBuilder {
-	ArrayList<String> keywords = new ArrayList<>();
 	
 	public static String buildQuery(String category, String query) {
-		String combined = query + " " + category + "";
-		combined = combined.replaceAll("\\r\\n", "").replaceAll(";", "").replaceAll(":", "").replaceAll(",", "");
+		String combined = query + " " + category.toLowerCase() + "";
+		combined = combined.replaceAll("\\r\\n", "").replaceAll(";", "").replaceAll(":", "").replaceAll(",", "").replaceAll("'", "");
+	
 		String newQuery = "";
+		
     	// Boost quotes and phrases
     	boolean inQuote = false;
     	String[] queryArr = combined.split(" ");
@@ -36,14 +50,9 @@ public class QueryBuilder {
     		}
     		newQuery += queryArr[i] + " ";
     	}
-    	System.out.println(newQuery.toLowerCase());
-		return newQuery.toLowerCase();
+    	//System.out.println(newQuery);
+		return newQuery;
 		//return newQuery + " " + category + "";
-	}
-	
-	public ArrayList<String> createKeywordList() {
-		
-		return keywords;
 	}
 	
 }
