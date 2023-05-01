@@ -26,10 +26,18 @@ public class QueryEngine {
 	static StandardAnalyzer analyzer;
 	String mode = "bm25";
 
-    public QueryEngine() throws IOException, ParseException {
+    public QueryEngine(int version) throws IOException, ParseException {
     	// Retrieve index
     	try {
-			index = FSDirectory.open(Paths.get("src\\main\\resources\\index"));
+    		String path = "";
+    		if (version == 1) {
+    			System.out.println("here");
+    			path += "src\\main\\resources\\index2";
+    		}
+    		else
+    			path += "src\\main\\resources\\index";
+    		// Build a static index file
+			index = FSDirectory.open(Paths.get(path));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -37,7 +45,7 @@ public class QueryEngine {
     }
     
     public static void main(String [] args) throws IOException, ParseException {
-    	QueryEngine engine = new QueryEngine();
+    	QueryEngine engine = new QueryEngine(1);
     	System.out.println("Welcome to Jeopardy!");
     	engine.runQuestions();
     }

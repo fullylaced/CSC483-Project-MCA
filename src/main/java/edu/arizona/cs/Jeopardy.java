@@ -11,8 +11,9 @@ import org.apache.lucene.queryparser.classic.ParseException;
 public class Jeopardy {
 	public static void main(String [] args) throws ParseException, IOException {
 		boolean indexExist = checkForIndex();
-		System.out.println("Welcome to Jeopardy!");
-		QueryEngine engine = new QueryEngine();
+		int version = 0;
+		System.out.println("Welcome to Jeopardy!!");
+		QueryEngine engine = new QueryEngine(1);
 		while(true) {
 			// Check if index exists
 			if(indexExist) {
@@ -21,6 +22,7 @@ public class Jeopardy {
 				System.out.println("1 - Run 100 questions");
 				System.out.println("2 - Enter a custom query");
 				System.out.println("3 - Change mode");
+				System.out.println("4 - Index option");
 				System.out.println("9 - Exit Jeopardy");
 				
 				Scanner selection = new Scanner(System.in);
@@ -65,16 +67,28 @@ public class Jeopardy {
 							System.out.println("Mode changed to BM25 Similarity");
 						}
 						break;
-						
+					case 4:
+						System.out.println("What index do you want to use?");
+						System.out.println("1 - Regular Index");
+						System.out.println("2 - CoreNLP Index");
+						Scanner index = new Scanner(System.in);
+						if(index.nextInt() == 1) {
+							engine = new QueryEngine(1);
+							System.out.println("Index changed to Regular Index");
+						} else {
+							engine = new QueryEngine(0);
+							System.out.println("Index changed to CoreNLP Index");
+						}
+						break;
 					case 9:
 						System.out.println("Thank  you for playing!");
-						break;
+						return;
 				}
 				// Build Index if it does not already exist
 			} else { 
 				System.out.println("Index does not exist");
 				try {
-					BuildIndex.buildIndex();
+					BuildIndex.buildIndex(version);
 					indexExist = true;
 				} catch (IOException | ParseException e) {
 					System.out.println("There was an error building index");

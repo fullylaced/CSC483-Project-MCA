@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -29,16 +30,22 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.ByteBuffersDirectory;
+import edu.stanford.nlp.ling.*;
+import edu.stanford.nlp.pipeline.*;
 
 public class BuildIndex {
 	public static File directory = new File("wiki-subset-20140602");
 	public static File[] files = directory.listFiles();
 	
-	public static void buildIndex() throws IOException, ParseException {
+	public static void buildIndex(int version) throws IOException, ParseException {
 		System.out.println("Building index...");
-		
+		String path = "";
+		if (version == 1)
+			path += "src\\main\\resources\\index2";
+		else
+			path += "src\\main\\resources\\index";
 		// Build a static index file
-		FSDirectory index = FSDirectory.open(Paths.get("src\\main\\resources\\index"));
+		FSDirectory index = FSDirectory.open(Paths.get(path));
 		
         StandardAnalyzer analyzer = new StandardAnalyzer();
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
@@ -52,14 +59,27 @@ public class BuildIndex {
 	}
 	
 	public static void main(String [] args) throws IOException, ParseException {
-		buildIndex();
+		buildIndex(1);
 	}
 	
 	private static void addDoc(IndexWriter w, String title, String body) throws IOException {
         Document doc = new Document();
         doc.add(new StringField("title", title, Field.Store.YES));
-
-        doc.add(new TextField("body", body, Field.Store.YES));
+        StringBuilder newBody = new StringBuilder();
+        
+        // Lemmatize
+        Properties props = new Properties();
+        // set the list of annotators to run
+        props.setProperty("annotators", "tokenize, ssplit, pos");
+        // build pipeline
+        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+        // create a document object
+        CoreDocument document = pipeline.processToCoreDocument(body);
+        // display tokens
+        for (CoreLabel tok : document.tokens())
+        	newBody.append(tok.lemma());
+        
+        doc.add(new TextField("body", newBody.toString(), Field.Store.YES));
         w.addDocument(doc);
     }
 	
@@ -93,8 +113,8 @@ public class BuildIndex {
 	public static Map<String, String> generateHashMap(IndexWriter w) throws IOException {   
 		Map<String, String> map = new HashMap<>();
         // Map<String, ArrayList<String>> redirects = new HashMap<>();
-
         for (File file : files) {
+        	System.out.println("File: " + file.toString());
         	try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 String line;
                 StringBuilder sb = new StringBuilder();
@@ -108,10 +128,7 @@ public class BuildIndex {
                         	if (!(sb.toString().trim().contains("#REDIRECT"))) {
                         		map.put(title, sb.toString().trim());
                         		
-                        		// TODO: FIX LENGTH ISSUE
-                        		//System.out.println("");
                         		addDoc(w, title, sb.toString().trim());
-                                // redirects.put(title, new ArrayList<String>());
                         	}
                         	sb.setLength(0); // Clear StringBuilder
                         }
