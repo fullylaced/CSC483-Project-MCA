@@ -28,7 +28,7 @@ public class Jeopardy {
 			// Check if index exists
 			if(indexExist) {
 				// Menu
-				System.out.println("Plese select an option");
+				System.out.println("\nPlese select an option");
 				System.out.println("1 - Run 100 questions");
 				System.out.println("2 - Enter a custom query");
 				System.out.println("3 - Change mode");
@@ -81,15 +81,21 @@ public class Jeopardy {
 						System.out.println("What mode would you like to use?");
 						System.out.println("1 - Standard Index");
 						System.out.println("2 - Lemmatized Index");
+						System.out.println("3 - Stemmed Index");
 						Scanner index_mode = new Scanner(System.in);
-						if(index_mode.nextInt() == 1) {
+						int selected_mode = index_mode.nextInt();
+						if(selected_mode == 1) {
 							engine = new QueryEngine();
 							engine.index_mode = "reg";
 							System.out.println("Switched to Standard Index");
-						} else {
+						} else if(selected_mode == 2) {
 							engine = new QueryEngine("lemma");
 							engine.index_mode = "lemma";
-							System.out.println("Switched to Lemma Index");
+							System.out.println("Switched to Lemmatized Index");
+						} else {
+							engine = new QueryEngine("stem");
+							engine.index_mode = "stem";
+							System.out.println("Switched to Stemmed Index");
 						}
 						break;
 

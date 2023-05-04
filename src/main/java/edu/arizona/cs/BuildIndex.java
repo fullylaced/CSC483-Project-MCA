@@ -24,6 +24,7 @@ import org.apache.lucene.store.FSDirectory;
 import edu.stanford.nlp.ling.*;
 import edu.stanford.nlp.pipeline.*;
 
+
 /**
  * 
  * This file generates two types of indexes. Changing the version field to 1 will build
@@ -47,7 +48,10 @@ public class BuildIndex {
         String path = "";
 		if (v == 1) {
             version = 1;
-			path += "src\\main\\resources\\index2";
+			path += "src\\main\\resources\\lemma_index";
+        } else if (v == 2) {
+        	version = 2;
+			path += "src\\main\\resources\\stem_index";
         } else {
 			path += "src\\main\\resources\\index";
         }
@@ -91,6 +95,18 @@ public class BuildIndex {
                 newBody.append(tok.lemma());
 
             body = newBody.toString();
+        } else if(version == 2){ // stem
+        	body = body.replaceAll("ed "," ");
+            body = body.replaceAll("ing "," ");
+            body = body.replaceAll("ly "," ");
+            body = body.replaceAll("ment "," ");
+            body = body.replaceAll("er "," ");
+            body = body.replaceAll("est "," ");
+            body = body.replaceAll("ity "," ");
+            body = body.replaceAll("ize "," ");
+            body = body.replaceAll("ful "," ");
+            body = body.replaceAll("less "," ");
+            body = body.replaceAll("tion "," ");
         }
 
         doc.add(new TextField("body", body, Field.Store.YES));

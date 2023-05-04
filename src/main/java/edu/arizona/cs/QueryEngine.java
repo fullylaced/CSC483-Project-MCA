@@ -37,15 +37,21 @@ public class QueryEngine {
 	// Constructor for query engine
     public QueryEngine() throws IOException, ParseException {
     	// Retrieve index
-		if(index_mode.equals("reg")){
+    	if(index_mode.equals("reg")){
 			try { // Standard Index
 				index = FSDirectory.open(Paths.get("src\\main\\resources\\index"));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		} else {
+		} else if(index_mode.equals("lemma")){
 			try { // Lemma Index
 				index = FSDirectory.open(Paths.get("src\\main\\resources\\lemma_index"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			try { // Stem Index
+				index = FSDirectory.open(Paths.get("src\\main\\resources\\stem_index"));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -63,9 +69,15 @@ public class QueryEngine {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		} else {
+		} else if(index_mode.equals("lemma")){
 			try { // Lemma Index
 				index = FSDirectory.open(Paths.get("src\\main\\resources\\lemma_index"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else if(index_mode.equals("stem")){
+			try { // Stem Index
+				index = FSDirectory.open(Paths.get("src\\main\\resources\\stem_index"));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -82,7 +94,7 @@ public class QueryEngine {
     
     // Runs query and prints top 10 results
     public String[] runQuery(String category, String query) throws IOException, ParseException {
-    	int hitsPerPage = 10; // Change for less hits
+    	int hitsPerPage = 5; // Change for less hits
     	
     	String queryStr = query + " " + category;
         //String queryStr = QueryBuilder.buildQuery(category, query);
