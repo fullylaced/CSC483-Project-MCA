@@ -101,6 +101,7 @@ public class Jeopardy {
 
 					case 9:
 						System.out.println("Thank  you for playing!");
+						System.exit(0);
 						break;
 				}
 				// Build Index if it does not already exist
