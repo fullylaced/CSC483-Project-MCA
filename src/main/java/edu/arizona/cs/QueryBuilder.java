@@ -2,7 +2,7 @@ package edu.arizona.cs;
 
 /**
  * 
- * This file is constructs a query by boosting certain terms. 
+ * This file constructs a query by boosting certain terms. 
  * 
  * Documents must include:
  * Quotes

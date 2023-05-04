@@ -22,8 +22,11 @@ import java.nio.file.Paths;
 
 /**
  * 
- * This file is the main interface and selection menu for the Jeopardy game. This
- * allows you to switch between a different scoring modes and indexes.
+ * This file is used to create the QueryEngine object, which has multiple 
+ * options for indexes and scoring modes. It is also used to process the 
+ * query and iterate through the documents to return the highest scoring 
+ * results. Also, the 100 questions script can be run which then displays 
+ * the results on the screen to the user.
  * 
  * @authors Merle Crutchfield, Robert Schnell, Avram Parra
  *
